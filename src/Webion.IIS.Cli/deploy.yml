@@ -3,9 +3,9 @@ services:
     is_production: yes
     daemon_address: http://192.168.1.194:5000
     site_id: 1
-    app_path: /gilda/luluu/api
+    app_path: /webion/TestIIS
     
     web_config_path: iis/web.config
     env_file: iis/kaire.env
     bundle_dir: out/Webion.IIS.Daemon
-    log_dir: logs
+    log_dir: \logs

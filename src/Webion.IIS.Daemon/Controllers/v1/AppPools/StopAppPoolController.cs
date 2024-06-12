@@ -8,7 +8,7 @@ using Webion.IIS.Daemon.Extensions;
 namespace Webion.IIS.Daemon.Controllers.v1.AppPools;
 
 [ApiController]
-[Route("v1/app-pools/{appPoolId}")]
+[Route("v1/app-pools/{appPoolId}/start")]
 public sealed class StopAppPoolController : ControllerBase
 {
     [HttpPut]

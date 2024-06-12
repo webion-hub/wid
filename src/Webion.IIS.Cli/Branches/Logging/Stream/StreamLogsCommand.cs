@@ -26,9 +26,21 @@ public sealed class StreamLogsCommand : AsyncCommand<StreamLogsCommandSettings>
             AnsiConsole.MarkupLine(Msg.Err("Service not configured"));
             return 1;
         }
-        
+
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+            {
+                return true;
+            }
+        };
+
         await using var client = new HubConnectionBuilder()
-            .WithUrl(new Uri(service.DaemonAddress, "v1/hubs/applications"))
+            .WithUrl(new Uri(service.DaemonAddress, "v1/hubs/applications"),
+            options =>
+            {
+                options.HttpMessageHandlerFactory = options.HttpMessageHandlerFactory = _ => handler;
+            })
             .Build();
 
         await client.StartAsync(_lifetime.CancellationToken);
@@ -44,9 +56,9 @@ public sealed class StreamLogsCommand : AsyncCommand<StreamLogsCommandSettings>
         {
             await foreach (var log in logs)
             {
-                AnsiConsole.MarkupLine(log.Message);
+                AnsiConsole.WriteLine(log.Message);
             }
-            
+
             return 0;
         });
     }

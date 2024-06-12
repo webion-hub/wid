@@ -11,7 +11,7 @@ public sealed class StreamLogsHub : Hub
     public async IAsyncEnumerable<LogDto> StreamLogs(StreamLogsRequest request)
     {
         using var iis = new ServerManager();
-        
+
         var appPath = Base64Id.Deserialize(request.AppId);
         var app = iis.Sites
             .Where(x => x.Id == request.SiteId)
@@ -22,16 +22,16 @@ public sealed class StreamLogsHub : Hub
         if (app is null)
             yield break;
 
-        var dir = app.VirtualDirectories["/"].PhysicalPath;
+        var dir = app.VirtualDirectories["/"].PhysicalPath + request.LogDirectory;
         var files = Directory.EnumerateFiles(dir, "*.log");
         var lastLogFile = files
             .Select(x => new FileInfo(x))
-            .MinBy(x => x.LastWriteTimeUtc);
-        
+            .MaxBy(x => x.LastWriteTimeUtc);
+
         if (lastLogFile is null)
             yield break;
 
-        await using var stream = lastLogFile.OpenRead();
+        await using var stream = new FileStream(lastLogFile.FullName, FileMode.Open, FileAccess.Read);
         using var reader = new StreamReader(stream);
         using var throttle = new PeriodicTimer(TimeSpan.FromMilliseconds(100));
 
@@ -43,7 +43,7 @@ public sealed class StreamLogsHub : Hub
                 await throttle.WaitForNextTickAsync(Context.ConnectionAborted);
                 continue;
             }
-            
+
             yield return new LogDto
             {
                 Message = line,

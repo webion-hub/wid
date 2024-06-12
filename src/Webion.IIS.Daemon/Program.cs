@@ -10,6 +10,8 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+builder.Services.AddSignalR();
+
 builder.Services.AddProblemDetails();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -25,5 +27,5 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<StreamLogsHub>("v1/hubs/applications");
+app.MapHub<StreamLogsHub>("/v1/hubs/applications");
 app.Run();
