@@ -4,6 +4,8 @@ using Spectre.Console.Cli;
 using Webion.IIS.Cli.Branches;
 using Webion.IIS.Cli.Branches.Deploy;
 using Webion.IIS.Cli.Branches.Logging;
+using Webion.IIS.Cli.Branches.Services.Start;
+using Webion.IIS.Cli.Branches.Services.Stop;
 using Webion.IIS.Cli.Core;
 using Webion.IIS.Cli.DI;
 using Webion.IIS.Client;
@@ -24,6 +26,8 @@ app.Configure(o =>
 {
     o.AddBranch<DeployBranch>();
     o.AddBranch<LoggingBranch>();
+    o.AddBranch<StartServiceBranch>();
+    o.AddBranch<StopServiceBranch>();
 });
 
 return await app.RunAsync(args);

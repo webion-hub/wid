@@ -7,8 +7,6 @@ using Webion.IIS.Cli.Ui;
 using Webion.IIS.Cli.Ui.Errors;
 using Webion.IIS.Client;
 using Webion.IIS.Core.ValueObjects;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
 
 namespace Webion.IIS.Cli.Branches.Deploy;
 
@@ -42,7 +40,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
                 prompt: Msg.Ask("Deploy to production"),
                 defaultValue: false
             );
-            
+
             if (!commit)
                 return 0;
         }
@@ -52,14 +50,14 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         return await AnsiConsole.Status().StartAsync("Stopping service", async ctx =>
         {
             var appId = Base64Id.Serialize(service.AppPath);
-            
+
             var stopResponse = await _iis.Applications.StopAsync(service.SiteId, appId);
             if (!stopResponse.IsSuccessStatusCode)
             {
                 AnsiConsole.Write(ApiErrorTable.From(stopResponse));
                 return -1;
             }
-            
+
             AnsiConsole.MarkupLine($"{Icons.Ok} Service stopped");
 
             ctx.Status("Uploading bundle");
@@ -79,7 +77,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
                 AnsiConsole.Write(ApiErrorTable.From(deployResponse));
                 return -1;
             }
-            
+
             AnsiConsole.MarkupLine($"{Icons.Ok} Bundle uploaded");
 
             ctx.Status("Starting service");
@@ -89,8 +87,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
                 AnsiConsole.Write(ApiErrorTable.From(startResponse));
                 return -1;
             }
-            
-            
+
             AnsiConsole.MarkupLine($"{Icons.Ok} Service started");
             return 0;
         });
