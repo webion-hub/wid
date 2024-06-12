@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Web.Administration;
 using Webion.IIS.Core.ValueObjects;
-using Webion.IIS.Daemon.Contracts.v1.Sites.Applications;
 using Webion.IIS.Daemon.Controllers.v1.Sites.Applications.GetAll;
 
 namespace Webion.IIS.Daemon.Controllers.v1.Sites.Applications;
@@ -15,7 +14,7 @@ public sealed class GetAllSiteApplicationsController : ControllerBase
     public Results<Ok<GetAllSiteApplicationsResponse>, NotFound> GetAll([FromRoute] long siteId)
     {
         using var iis = new ServerManager();
-        
+
         var site = iis.Sites.FirstOrDefault(x => x.Id == siteId);
         if (site is null)
             return TypedResults.NotFound();
@@ -29,7 +28,7 @@ public sealed class GetAllSiteApplicationsController : ControllerBase
                 AppPoolName = x.ApplicationPoolName
             })
             .ToList();
-        
+
         return TypedResults.Ok(new GetAllSiteApplicationsResponse
         {
             Applications = apps,

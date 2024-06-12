@@ -7,7 +7,6 @@ public sealed class DeploySettings
 {
     public required Dictionary<string, ServiceSettings> Services { get; init; }
 
-
     public static async Task<DeploySettings> TryReadFromFileAsync(string path)
     {
         var deserializer = new DeserializerBuilder()
