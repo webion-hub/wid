@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
 
-namespace Webion.IIS.Cli.Branches.Services.Start;
+namespace Webion.IIS.Cli.Branches.Service.Start;
 
 public sealed class StartServiceCommandSettings : CommandSettings
 {

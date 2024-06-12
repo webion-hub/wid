@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
 
-namespace Webion.IIS.Cli.Branches.Services.Stop;
+namespace Webion.IIS.Cli.Branches.Service.Stop;
 
 public sealed class StopServiceCommandSettings : CommandSettings
 {

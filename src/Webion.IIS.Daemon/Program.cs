@@ -25,7 +25,7 @@ app.UseSwaggerUI();
 app.MapControllers();
 app.MapHub<StreamLogsHub>("/v1/hubs/applications");
 
-var port = args.FirstOrDefault() ?? "5000";
+var port = args.FirstOrDefault() ?? "8080";
 var url = $"http://0.0.0.0:{port}";
 app.Urls.Add(url);
 

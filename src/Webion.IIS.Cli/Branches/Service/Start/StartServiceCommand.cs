@@ -6,7 +6,7 @@ using Webion.IIS.Cli.Ui.Errors;
 using Webion.IIS.Client;
 using Webion.IIS.Core.ValueObjects;
 
-namespace Webion.IIS.Cli.Branches.Services.Start;
+namespace Webion.IIS.Cli.Branches.Service.Start;
 
 public sealed class StartServiceCommand : AsyncCommand<StartServiceCommandSettings>
 {
@@ -27,10 +27,11 @@ public sealed class StartServiceCommand : AsyncCommand<StartServiceCommandSettin
         }
 
         _iis.BaseAddress = service.DaemonAddress;
-        var appId = Base64Id.Serialize(service.AppPath);
 
         return await AnsiConsole.Status().StartAsync("Starting service", async ctx =>
         {
+            var appId = Base64Id.Serialize(service.AppPath);
+
             ctx.Status("Starting service");
             var startResponse = await _iis.Applications.StartAsync(service.SiteId, appId);
             if (!startResponse.IsSuccessStatusCode)

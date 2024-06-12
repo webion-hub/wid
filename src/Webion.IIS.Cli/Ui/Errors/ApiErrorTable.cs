@@ -11,7 +11,7 @@ public static class ApiErrorTable
         var table = new Table();
         table.AddColumns("", "");
         table.AddRow("Status", response.StatusCode.ToString());
-        
+
         if (response.Error is null)
             return table;
 
@@ -25,7 +25,7 @@ public static class ApiErrorTable
         {
             table.AddRow("Error text", response.Error.Content ?? "");
         }
-        
+
         return table;
     }
 }

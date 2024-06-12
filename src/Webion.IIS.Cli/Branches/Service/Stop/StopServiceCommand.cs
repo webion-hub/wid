@@ -6,7 +6,7 @@ using Webion.IIS.Cli.Ui.Errors;
 using Webion.IIS.Client;
 using Webion.IIS.Core.ValueObjects;
 
-namespace Webion.IIS.Cli.Branches.Services.Stop;
+namespace Webion.IIS.Cli.Branches.Service.Stop;
 
 public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings>
 {
@@ -27,10 +27,11 @@ public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings
         }
 
         _iis.BaseAddress = service.DaemonAddress;
-        var appId = Base64Id.Serialize(service.AppPath);
 
         return await AnsiConsole.Status().StartAsync("Stopping service", async ctx =>
         {
+            var appId = Base64Id.Serialize(service.AppPath);
+
             ctx.Status("Stopping service");
             var stopResponse = await _iis.Applications.StopAsync(service.SiteId, appId);
             if (!stopResponse.IsSuccessStatusCode)
