@@ -49,7 +49,9 @@ public sealed class StreamLogsCommand : AsyncCommand<StreamLogsCommandSettings>
         {
             SiteId = service.SiteId,
             AppId = Base64Id.Serialize(service.AppPath),
-            LogDirectory = service.LogDir,
+            LogDirectory = service.LogDir.StartsWith('\\')
+                ? service.LogDir
+                : '\\' + service.LogDir
         });
 
         return await AnsiConsole.Status().StartAsync("Streaming", async _ =>

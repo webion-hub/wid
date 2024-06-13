@@ -15,6 +15,7 @@ public sealed class DeployApplicationController : ControllerBase
     /// </summary>
     /// <param name="siteId">The ID of the site to deploy the application to.</param>
     /// <param name="appId">The ID of the application to deploy.</param>
+    /// <param name="deleteDirectory">Delete the application directory to deploy.</param>
     /// <param name="bundle">The application bundle to deploy.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>
@@ -24,8 +25,10 @@ public sealed class DeployApplicationController : ControllerBase
     /// </returns>
     [HttpPost]
     [RequestSizeLimit(50_000_000)]
-    public async Task<Results<Ok, NotFound<ProblemDetails>>> Deploy([FromRoute] long siteId,
+    public async Task<Results<Ok, NotFound<ProblemDetails>>> Deploy(
+        [FromRoute] long siteId,
         [FromRoute] string appId,
+        [FromQuery] bool deleteDirectory,
         [FromForm] IFormFile bundle,
         CancellationToken cancellationToken
     )
@@ -56,15 +59,19 @@ public sealed class DeployApplicationController : ControllerBase
         await using var stream = new MemoryStream();
         await bundle.CopyToAsync(stream, cancellationToken);
         stream.Position = 0;
-        
+
         var sitePath = Path.Combine(app.VirtualDirectories["/"].PhysicalPath);
+
+        if (deleteDirectory && Directory.Exists(sitePath))
+            Directory.Delete(sitePath, true);
+
         ZipFile.ExtractToDirectory(
             source: stream,
             destinationDirectoryName: sitePath,
             entryNameEncoding: null,
             overwriteFiles: true
         );
-        
+
         return TypedResults.Ok();
     }
 }

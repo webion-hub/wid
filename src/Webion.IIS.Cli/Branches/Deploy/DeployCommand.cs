@@ -68,6 +68,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
             var deployResponse = await _iis.Applications.DeployAsync(
                 siteId: service.SiteId,
                 appId: appId,
+                deleteDirectory: service.DeleteDirectory,
                 bundle: new StreamPart(stream, "bundle.zip"),
                 cancellationToken: CancellationToken.None
             );
