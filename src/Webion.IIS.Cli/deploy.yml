@@ -6,6 +6,10 @@ services:
     app_path: /webion/TestIIS
     
     delete_directory: true
-    build_command: dotnet publish -o out
     bundle_dir: out/Webion.IIS.Daemon
     log_dir: logs
+    
+    build:
+      command: dotnet
+      args: ["publish", "-o", "out"]
+      work_dir: ../Webion.IIS.Daemon

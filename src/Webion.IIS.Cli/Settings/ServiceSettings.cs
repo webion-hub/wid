@@ -1,3 +1,5 @@
+using Webion.IIS.Daemon.Contracts.v1.Sites.Applications;
+
 namespace Webion.IIS.Cli.Settings;
 
 public sealed class ServiceSettings
@@ -8,7 +10,8 @@ public sealed class ServiceSettings
     public required string AppPath { get; init; }
 
     public required bool DeleteDirectory { get; init; }
-    public required string BuildCommand { get; init; }
     public required string BundleDir { get; init; }
     public required string LogDir { get; init; }
+
+    public required BuildDto Build { get; init; }
 }

@@ -19,10 +19,9 @@ public sealed class BuildCommand : AsyncCommand<BuildCommandSettings>
 
         return await AnsiConsole.Status().StartAsync("Build service", async ctx =>
         {
-            var command = service.BuildCommand.Split(" ");
-
-            await CliWrap.Cli.Wrap(command.First())
-                .WithArguments(command.Skip(1))
+            await CliWrap.Cli.Wrap(service.Build.Command)
+                .WithArguments(service.Build.Args)
+                .WithWorkingDirectory(service.Build.WorkDir)
                 .WithStandardOutputPipe(PipeTarget.ToDelegate((str) => AnsiConsole.MarkupLine(str!)))
                 .ExecuteAsync();
 
