@@ -24,8 +24,8 @@ public sealed class GetAllSiteApplicationsController : ControllerBase
             {
                 Id = Base64Id.Serialize(x.Path),
                 Path = x.Path,
+                AppPoolName = x.ApplicationPoolName,
                 EnabledProtocols = x.EnabledProtocols,
-                AppPoolName = x.ApplicationPoolName
             })
             .ToList();
 

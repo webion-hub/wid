@@ -1,0 +1,106 @@
+﻿@page "/apps"
+@using Webion.IIS.Daemon.Contracts.v1.AppPools
+@rendermode InteractiveServer
+@inject IIISDaemonClient IISDaemonClient
+
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<PageTitle>Apps</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Apps</MudText>
+
+@if (apps == null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    <MudTable Items="apps" Hover="true" SortLabel="Sort By" Elevation="0">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Ascending"
+                SortBy="new Func<ApplicationPoolDto, object>(x=>x.Id)">#</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.Name)">
+                Name
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.State)">
+                State
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.AutoStart!)">
+                AutoStart
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.StartMode!)">
+                StartMode
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.QueueLength!)">
+                QueueLength
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.ManagedRuntimeVersion!)">
+                ManagedRuntimeVersion
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.Enable32BitAppOnWin64!)">
+                Enable32BitAppOnWin64
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="#">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="State">@context.State</MudTd>
+        <MudTd DataLabel="AutoStart">@context.AutoStart</MudTd>
+        <MudTd DataLabel="StartMode">@context.StartMode</MudTd>
+        <MudTd DataLabel="QueueLength">@context.QueueLength</MudTd>
+        <MudTd DataLabel="ManagedRuntimeVersion">@context.ManagedRuntimeVersion</MudTd>
+        <MudTd DataLabel="Enable32BitAppOnWin64">@context.Enable32BitAppOnWin64</MudTd>
+        <MudTd>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => StartOnClick(context.Id)">
+                Start
+            </MudButton>
+            <br><br>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => StopOnClick(context.Id)">
+                Stop
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[]{5, 10}" />
+    </PagerContent>
+</MudTable>
+}
+
+@code {
+    private ApplicationPoolDto[]? apps;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await IISDaemonClient.AppPools.GetAllAsync();
+        apps = response.AppPools.ToArray();
+    }
+
+    private async Task StartOnClick(string appId)
+    {
+        await IISDaemonClient.AppPools.StartAsync(appId);
+    }
+
+    private async Task StopOnClick(string appId)
+    {
+        await IISDaemonClient.AppPools.StopAsync(appId);
+    }
+}
