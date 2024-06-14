@@ -1,11 +1,10 @@
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Webion.IIS.Client;
-using Webion.IIS.UI.Components;
+using Webion.IIS.UI;
 
-var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+var builder = WebAssemblyHostBuilder.CreateDefault();
+builder.RootComponents.Add<App>("#app");
 
 builder.Services.AddMudServices();
 
@@ -13,17 +12,7 @@ builder.Services
     .AddHttpClient<IIISDaemonClient, IISDaemonClient>()
     .ConfigureHttpClient(c =>
     {
-        c.BaseAddress = new Uri(builder.Configuration["ApiUrl"] ?? "http://localhost:8080");
+        c.BaseAddress = new Uri("http://192.168.1.194:8080");
     });
 
-var app = builder.Build();
-
-app.UseAntiforgery();
-app.UseStaticFiles();
-
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-app.Urls.Add("http://localhost:5000");
-
-app.Run();
+await builder.Build().RunAsync();

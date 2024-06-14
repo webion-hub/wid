@@ -3,6 +3,14 @@ using Webion.IIS.Daemon.Hubs.v1.Applications;
 
 var builder = WebApplication.CreateBuilder();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("NewPolicy", builder =>
+    builder.AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
+});
+
 builder.Services
     .AddControllers()
     .AddJsonOptions(options =>
@@ -18,6 +26,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCors("NewPolicy");
 
 app.UseSwagger();
 app.UseSwaggerUI();
