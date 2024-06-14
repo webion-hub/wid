@@ -1,5 +1,8 @@
 ﻿@page "/apps"
+@using Refit
+@using Webion.IIS.Core.ValueObjects
 @using Webion.IIS.Daemon.Contracts.v1.AppPools
+@using Webion.IIS.Daemon.Contracts.v1.Sites.Applications
 @rendermode InteractiveServer
 @inject IIISDaemonClient IISDaemonClient
 
@@ -20,12 +23,13 @@ else
     <MudTable Items="apps" Hover="true" SortLabel="Sort By" Elevation="0">
     <HeaderContent>
         <MudTh>
-            <MudTableSortLabel InitialDirection="SortDirection.Ascending"
-                SortBy="new Func<ApplicationPoolDto, object>(x=>x.Id)">#</MudTableSortLabel>
+            <MudTableSortLabel SortBy="new Func<ApplicationDto, object>(x=>x.Path)">
+                Path
+            </MudTableSortLabel>
         </MudTh>
         <MudTh>
             <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.Name)">
-                Name
+                App pool
             </MudTableSortLabel>
         </MudTh>
         <MudTh>
@@ -34,73 +38,66 @@ else
             </MudTableSortLabel>
         </MudTh>
         <MudTh>
-            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.AutoStart!)">
+            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.AutoStart)">
                 AutoStart
-            </MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.StartMode!)">
-                StartMode
-            </MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.QueueLength!)">
-                QueueLength
-            </MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.ManagedRuntimeVersion!)">
-                ManagedRuntimeVersion
-            </MudTableSortLabel>
-        </MudTh>
-        <MudTh>
-            <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x=>x.Enable32BitAppOnWin64!)">
-                Enable32BitAppOnWin64
             </MudTableSortLabel>
         </MudTh>
         <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="#">@context.Id</MudTd>
-        <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="State">@context.State</MudTd>
-        <MudTd DataLabel="AutoStart">@context.AutoStart</MudTd>
-        <MudTd DataLabel="StartMode">@context.StartMode</MudTd>
-        <MudTd DataLabel="QueueLength">@context.QueueLength</MudTd>
-        <MudTd DataLabel="ManagedRuntimeVersion">@context.ManagedRuntimeVersion</MudTd>
-        <MudTd DataLabel="Enable32BitAppOnWin64">@context.Enable32BitAppOnWin64</MudTd>
+        <MudTd DataLabel="Path">@context.Path</MudTd>
+        <MudTd DataLabel="AppPoolName">@context.AppPool.Name</MudTd>
+        <MudTd DataLabel="State">@context.AppPool.State</MudTd>
+        <MudTd DataLabel="AutoStart">@context.AppPool.AutoStart</MudTd>
         <MudTd>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => StartOnClick(context.Id)">
-                Start
-            </MudButton>
-            <br><br>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => StopOnClick(context.Id)">
-                Stop
-            </MudButton>
+            <MudFab HtmlTag="label" Color="@Color.Success" StartIcon="@Icons.Custom.Uncategorized.Radioactive"
+                Size="@Size.Small" OnClick="() => StartOnClick(context.AppPool.Id)" />
+            <MudFab HtmlTag="label" Color="@Color.Error" StartIcon="@Icons.Material.Filled.Stop" Size="@Size.Small"
+                OnClick="() => StopOnClick(context.AppPool.Id)" />
+            <InputFile id="@($"file-{context.Id}")" OnChange="e => UploadFile(e, context)" hidden />
+            <MudFab HtmlTag="label" Color="@Color.Warning" StartIcon="@Icons.Material.Filled.Upload" Size="@Size.Small"
+                for="@($"file-{context.Id}")" />
         </MudTd>
     </RowTemplate>
     <PagerContent>
-        <MudTablePager PageSizeOptions="new int[]{5, 10}" />
+        <MudTablePager PageSizeOptions="new int[]{10, 50}" />
     </PagerContent>
 </MudTable>
 }
 
 @code {
-    private ApplicationPoolDto[]? apps;
+    private IEnumerable<ApplicationDto>? apps;
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await IISDaemonClient.AppPools.GetAllAsync();
-        apps = response.AppPools.ToArray();
+        var response = await IISDaemonClient.Applications.GetAllAsync();
+
+        if (response.IsSuccessStatusCode)
+            apps = response.Content.Applications;
     }
 
     private async Task StartOnClick(string appId)
     {
         await IISDaemonClient.AppPools.StartAsync(appId);
+        await OnInitializedAsync();
     }
 
     private async Task StopOnClick(string appId)
     {
         await IISDaemonClient.AppPools.StopAsync(appId);
+        await OnInitializedAsync();
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e, ApplicationDto application)
+    {
+        await IISDaemonClient.Applications.DeployAsync(
+            application.Site.Id,
+            Base64Id.Serialize(application.Path),
+            true,
+            new StreamPart(e.File.OpenReadStream(), "bundle.zip"),
+            new CancellationToken()
+        );
+
+        await OnInitializedAsync();
     }
 }

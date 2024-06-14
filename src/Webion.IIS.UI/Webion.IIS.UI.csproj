@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Webion.IIS.Core\Webion.IIS.Core.csproj" />
     <ProjectReference Include="..\Webion.IIS.Daemon.Client\Webion.IIS.Daemon.Client.csproj" />
   </ItemGroup>
   

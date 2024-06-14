@@ -13,12 +13,13 @@ builder.Services
     .AddHttpClient<IIISDaemonClient, IISDaemonClient>()
     .ConfigureHttpClient(c =>
     {
-        c.BaseAddress = new Uri(builder.Configuration["ApiUrl"] ?? "http://localhost:5000");
+        c.BaseAddress = new Uri(builder.Configuration["ApiUrl"] ?? "http://localhost:8080");
     });
 
 var app = builder.Build();
 
 app.UseAntiforgery();
+app.UseStaticFiles();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

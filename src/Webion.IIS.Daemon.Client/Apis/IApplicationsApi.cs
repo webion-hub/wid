@@ -1,13 +1,12 @@
 using Refit;
 using Webion.IIS.Daemon.Contracts.v1.Sites.Applications;
-using Webion.IIS.Daemon.Controllers.v1.Sites.Applications.GetAll;
 
 namespace Webion.IIS.Client.Apis;
 
 public interface IApplicationsApi
 {
-    [Get("/v1/sites/{siteId}/applications")]
-    Task<ApiResponse<GetAllSiteApplicationsResponse>> GetAllAsync(long siteId);
+    [Get("/v1/applications")]
+    Task<ApiResponse<GetAllSiteApplicationsResponse>> GetAllAsync();
 
     [Multipart]
     [Post("/v1/sites/{siteId}/applications/{appId}/deploy")]

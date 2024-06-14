@@ -43,11 +43,11 @@ else
 }
 
 @code {
-    private SiteDto[]? sites;
+    private IEnumerable<SiteDto>? sites;
 
     protected override async Task OnInitializedAsync()
     {
         var response = await IISDaemonClient.Sites.GetAllAsync(new CancellationToken());
-        sites = response.Sites.ToArray();
+        sites = response.Sites;
     }
 }
