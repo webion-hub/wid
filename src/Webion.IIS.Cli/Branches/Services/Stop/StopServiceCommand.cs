@@ -19,21 +19,27 @@ public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings
 
     public override async Task<int> ExecuteAsync(CommandContext context, StopServiceCommandSettings settings)
     {
-        var deploySettings = await DeploySettings.TryReadFromFileAsync(settings.SettingsFile ?? "deploy.yml");
-        if (!deploySettings.Services.TryGetValue(settings.ServiceName, out var service))
+        var service = await DeploySettings.GetServiceFromFileAsync(
+            path: settings.SettingsFile ?? "deploy.yml",
+            serviceName: settings.ServiceName,
+            cancellationToken: default
+        );
+        
+        if (service is null)
         {
             AnsiConsole.MarkupLine(Msg.Err("Service not configured"));
             return 1;
         }
 
-        _iis.BaseAddress = service.DaemonAddress;
+        var env = service.GetEnvironment(settings.Env);
+        _iis.BaseAddress = env.DaemonAddress;
 
         return await AnsiConsole.Status().StartAsync("Stopping service", async ctx =>
         {
-            var appId = Base64Id.Serialize(service.AppPath);
+            var appId = Base64Id.Serialize(env.AppPath);
 
             ctx.Status("Stopping service");
-            var stopResponse = await _iis.Applications.StopAsync(service.SiteId, appId);
+            var stopResponse = await _iis.Applications.StopAsync(env.SiteId, appId);
             if (!stopResponse.IsSuccessStatusCode)
             {
                 AnsiConsole.Write(ApiErrorTable.From(stopResponse));

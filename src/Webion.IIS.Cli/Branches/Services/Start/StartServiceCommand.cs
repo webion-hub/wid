@@ -1,39 +1,45 @@
 using Spectre.Console;
 using Spectre.Console.Cli;
+using Webion.IIS.Cli.Core;
 using Webion.IIS.Cli.Settings;
 using Webion.IIS.Cli.Ui;
 using Webion.IIS.Cli.Ui.Errors;
 using Webion.IIS.Client;
-using Webion.IIS.Core.ValueObjects;
 
 namespace Webion.IIS.Cli.Branches.Services.Start;
 
 public sealed class StartServiceCommand : AsyncCommand<StartServiceCommandSettings>
 {
     private readonly IIISDaemonClient _iis;
+    private readonly ICliApplicationLifetime _lifetime;
 
-    public StartServiceCommand(IIISDaemonClient iis)
+    public StartServiceCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime)
     {
         _iis = iis;
+        _lifetime = lifetime;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, StartServiceCommandSettings settings)
     {
-        var deploySettings = await DeploySettings.TryReadFromFileAsync(settings.SettingsFile ?? "deploy.yml");
-        if (!deploySettings.Services.TryGetValue(settings.ServiceName, out var service))
+        var service = await DeploySettings.GetServiceFromFileAsync(
+            path: settings.SettingsFile ?? "deploy.yml",
+            serviceName: settings.ServiceName,
+            cancellationToken: _lifetime.CancellationToken
+        );
+        
+        if (service is null)
         {
             AnsiConsole.MarkupLine(Msg.Err("Service not configured"));
             return 1;
         }
 
-        _iis.BaseAddress = service.DaemonAddress;
+        var env = service.GetEnvironment(settings.Env);
+        _iis.BaseAddress = env.DaemonAddress;
 
         return await AnsiConsole.Status().StartAsync("Starting service", async ctx =>
         {
-            var appId = Base64Id.Serialize(service.AppPath);
-
             ctx.Status("Starting service");
-            var startResponse = await _iis.Applications.StartAsync(service.SiteId, appId);
+            var startResponse = await _iis.Applications.StartAsync(env.SiteId, env.AppId);
             if (!startResponse.IsSuccessStatusCode)
             {
                 AnsiConsole.Write(ApiErrorTable.From(startResponse));

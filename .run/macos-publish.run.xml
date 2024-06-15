@@ -1,6 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="macos-publish" type="DotNetFolderPublish" factoryName="Publish to folder">
-    <riderPublish configuration="Release" delete_existing_files="true" platform="Any CPU" produce_single_file="true" runtime="osx-arm64" target_folder="$PROJECT_DIR$/src/Webion.IIS.Cli/bin/Release/net8.0/osx-arm64/publish" target_framework="net8.0" uuid_high="-3719988836001168355" uuid_low="-5769363957265962787" />
-    <method v="2" />
-  </configuration>
-</component>

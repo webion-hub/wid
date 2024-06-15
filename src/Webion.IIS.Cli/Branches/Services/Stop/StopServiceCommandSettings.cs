@@ -12,4 +12,8 @@ public sealed class StopServiceCommandSettings : CommandSettings
     [Description("Path to the settings file")]
     [CommandOption("--settings-file")]
     public string? SettingsFile { get; init; }
+    
+    [Description("The environment to use")]
+    [CommandOption("--env")]
+    public string? Env { get; init; }
 }

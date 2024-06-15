@@ -15,4 +15,3 @@ services:
       work_dir: ../Webion.IIS.Daemon
       command: |
         dotnet publish -c Release
-        echo 'Done'

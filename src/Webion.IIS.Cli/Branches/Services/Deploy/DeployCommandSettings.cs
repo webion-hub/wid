@@ -12,4 +12,12 @@ public sealed class DeployCommandSettings : CommandSettings
     [Description("Path to the settings file")]
     [CommandOption("--settings-file")]
     public string? SettingsFile { get; init; }
+    
+    [Description("The environment to use")]
+    [CommandOption("--env")]
+    public string? Env { get; init; }
+
+    [Description("Forcefully deletes the contents of the remote app")]
+    [CommandOption("--force-delete")]
+    public bool ForceDelete { get; set; }
 }

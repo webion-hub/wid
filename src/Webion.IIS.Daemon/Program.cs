@@ -18,7 +18,6 @@ builder.Services
     });
 
 builder.Services.AddSignalR();
-
 builder.Services.AddProblemDetails();
 
 
@@ -30,9 +29,5 @@ app.Use<OpenApiConfig>();
 
 app.MapControllers();
 app.MapHub<StreamLogsHub>("/v{version:apiVersion}/hubs/applications");
-
-var port = args.FirstOrDefault() ?? "8080";
-var url = $"http://0.0.0.0:{port}";
-app.Urls.Add(url);
 
 app.Run();

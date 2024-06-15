@@ -22,6 +22,6 @@ public sealed class ServicesBranch : IBranchConfig
             {
                 logs.AddCommand<StreamLogsCommand>("stream");
             });
-        });
+        }).WithAlias("service");
     }
 }

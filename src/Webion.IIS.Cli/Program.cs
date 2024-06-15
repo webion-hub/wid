@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Extensions.Http;
 using Spectre.Console.Cli;
 using Webion.IIS.Cli.Branches;
 using Webion.IIS.Cli.Branches.Services;

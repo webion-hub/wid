@@ -20,24 +20,30 @@ public sealed class StreamLogsCommand : AsyncCommand<StreamLogsCommandSettings>
 
     public override async Task<int> ExecuteAsync(CommandContext context, StreamLogsCommandSettings settings)
     {
-        var deploySettings = await DeploySettings.TryReadFromFileAsync(settings.SettingsFile ?? "deploy.yml");
-        if (!deploySettings.Services.TryGetValue(settings.ServiceName, out var service))
+        var service = await DeploySettings.GetServiceFromFileAsync(
+            path: settings.SettingsFile ?? "deploy.yml",
+            serviceName: settings.ServiceName,
+            cancellationToken: _lifetime.CancellationToken
+        );
+        
+        if (service is null)
         {
             AnsiConsole.MarkupLine(Msg.Err("Service not configured"));
             return 1;
         }
 
+        var env = service.GetEnvironment(settings.Env);
         await using var client = new HubConnectionBuilder()
-            .WithUrl(new Uri(service.DaemonAddress, "v1/hubs/applications"))
+            .WithUrl(new Uri(env.DaemonAddress, "v1/hubs/applications"))
             .Build();
 
         await client.StartAsync(_lifetime.CancellationToken);
 
         var logs = client.StreamAsync<LogDto>("streamLogs", new StreamLogsRequest
         {
-            SiteId = service.SiteId,
-            AppId = Base64Id.Serialize(service.AppPath),
-            LogDirectory = service.LogDir,
+            SiteId = env.SiteId,
+            AppId = env.AppId,
+            LogDirectory = env.LogDir,
         });
 
         return await AnsiConsole.Status().StartAsync("Streaming logs", async _ =>

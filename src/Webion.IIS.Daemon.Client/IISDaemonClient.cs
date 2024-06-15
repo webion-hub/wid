@@ -11,7 +11,7 @@ public sealed class IISDaemonClient : IIISDaemonClient
     {
         _client = client;
     }
-
+    
     public IApplicationsApi Applications => RestService.For<IApplicationsApi>(_client);
     public ISitesApi Sites => RestService.For<ISitesApi>(_client);
     public IAppPoolsApi AppPools => RestService.For<IAppPoolsApi>(_client);
