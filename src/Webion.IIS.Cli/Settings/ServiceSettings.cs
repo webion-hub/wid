@@ -9,9 +9,9 @@ public sealed class ServiceSettings
     public required long SiteId { get; init; }
     public required string AppPath { get; init; }
 
-    public required bool DeleteDirectory { get; init; }
+    public required bool ForceDelete { get; init; }
     public required string BundleDir { get; init; }
     public required string LogDir { get; init; }
 
-    public required BuildDto Build { get; init; }
+    public required BuildSettings Build { get; init; }
 }

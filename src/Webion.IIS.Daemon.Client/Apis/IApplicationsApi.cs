@@ -13,7 +13,7 @@ public interface IApplicationsApi
     Task<IApiResponse> DeployAsync(
         long siteId,
         string appId,
-        [Query] bool deleteDirectory,
+        [Query] bool forceDelete,
         [AliasAs("bundle")] StreamPart bundle,
         CancellationToken cancellationToken
     );

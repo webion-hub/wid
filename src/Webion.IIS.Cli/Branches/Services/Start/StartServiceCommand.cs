@@ -6,18 +6,18 @@ using Webion.IIS.Cli.Ui.Errors;
 using Webion.IIS.Client;
 using Webion.IIS.Core.ValueObjects;
 
-namespace Webion.IIS.Cli.Branches.Service.Stop;
+namespace Webion.IIS.Cli.Branches.Services.Start;
 
-public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings>
+public sealed class StartServiceCommand : AsyncCommand<StartServiceCommandSettings>
 {
     private readonly IIISDaemonClient _iis;
 
-    public StopServiceCommand(IIISDaemonClient iis)
+    public StartServiceCommand(IIISDaemonClient iis)
     {
         _iis = iis;
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, StopServiceCommandSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, StartServiceCommandSettings settings)
     {
         var deploySettings = await DeploySettings.TryReadFromFileAsync(settings.SettingsFile ?? "deploy.yml");
         if (!deploySettings.Services.TryGetValue(settings.ServiceName, out var service))
@@ -28,19 +28,19 @@ public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings
 
         _iis.BaseAddress = service.DaemonAddress;
 
-        return await AnsiConsole.Status().StartAsync("Stopping service", async ctx =>
+        return await AnsiConsole.Status().StartAsync("Starting service", async ctx =>
         {
             var appId = Base64Id.Serialize(service.AppPath);
 
-            ctx.Status("Stopping service");
-            var stopResponse = await _iis.Applications.StopAsync(service.SiteId, appId);
-            if (!stopResponse.IsSuccessStatusCode)
+            ctx.Status("Starting service");
+            var startResponse = await _iis.Applications.StartAsync(service.SiteId, appId);
+            if (!startResponse.IsSuccessStatusCode)
             {
-                AnsiConsole.Write(ApiErrorTable.From(stopResponse));
+                AnsiConsole.Write(ApiErrorTable.From(startResponse));
                 return -1;
             }
 
-            AnsiConsole.MarkupLine($"{Icons.Ok} Service stopped");
+            AnsiConsole.MarkupLine($"{Icons.Ok} Service started");
             return 0;
         });
     }

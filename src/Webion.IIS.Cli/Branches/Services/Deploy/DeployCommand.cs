@@ -8,7 +8,7 @@ using Webion.IIS.Cli.Ui.Errors;
 using Webion.IIS.Client;
 using Webion.IIS.Core.ValueObjects;
 
-namespace Webion.IIS.Cli.Branches.Deploy;
+namespace Webion.IIS.Cli.Branches.Services.Deploy;
 
 public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
 {
@@ -61,18 +61,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
             AnsiConsole.MarkupLine($"{Icons.Ok} Service stopped");
 
             ctx.Status("Uploading bundle");
-            using var stream = new MemoryStream();
-            ZipFile.CreateFromDirectory(service.BundleDir, stream);
-            stream.Position = 0;
-
-            var deployResponse = await _iis.Applications.DeployAsync(
-                siteId: service.SiteId,
-                appId: appId,
-                deleteDirectory: service.DeleteDirectory,
-                bundle: new StreamPart(stream, "bundle.zip"),
-                cancellationToken: CancellationToken.None
-            );
-
+            var deployResponse = await DeployAsync(service, appId);
             if (!deployResponse.IsSuccessStatusCode)
             {
                 AnsiConsole.Write(ApiErrorTable.From(deployResponse));
@@ -92,5 +81,20 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
             AnsiConsole.MarkupLine($"{Icons.Ok} Service started");
             return 0;
         });
+    }
+
+    private async Task<IApiResponse> DeployAsync(ServiceSettings service, string appId)
+    {
+        using var stream = new MemoryStream();
+        ZipFile.CreateFromDirectory(service.BundleDir, stream);
+        stream.Position = 0;
+
+        return await _iis.Applications.DeployAsync(
+            siteId: service.SiteId,
+            appId: appId,
+            forceDelete: service.ForceDelete,
+            bundle: new StreamPart(stream, "bundle.zip"),
+            cancellationToken: CancellationToken.None
+        );
     }
 }

@@ -7,7 +7,7 @@ using Webion.IIS.Cli.Ui;
 using Webion.IIS.Core.ValueObjects;
 using Webion.IIS.Daemon.Contracts.v1.Sites.Applications;
 
-namespace Webion.IIS.Cli.Branches.Logging.Stream;
+namespace Webion.IIS.Cli.Branches.Services.Logging.Stream;
 
 public sealed class StreamLogsCommand : AsyncCommand<StreamLogsCommandSettings>
 {
@@ -27,20 +27,8 @@ public sealed class StreamLogsCommand : AsyncCommand<StreamLogsCommandSettings>
             return 1;
         }
 
-        var handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
-            {
-                return true;
-            }
-        };
-
         await using var client = new HubConnectionBuilder()
-            .WithUrl(new Uri(service.DaemonAddress, "v1/hubs/applications"),
-            options =>
-            {
-                options.HttpMessageHandlerFactory = options.HttpMessageHandlerFactory = _ => handler;
-            })
+            .WithUrl(new Uri(service.DaemonAddress, "v1/hubs/applications"))
             .Build();
 
         await client.StartAsync(_lifetime.CancellationToken);
@@ -49,12 +37,10 @@ public sealed class StreamLogsCommand : AsyncCommand<StreamLogsCommandSettings>
         {
             SiteId = service.SiteId,
             AppId = Base64Id.Serialize(service.AppPath),
-            LogDirectory = service.LogDir.StartsWith('\\')
-                ? service.LogDir
-                : '\\' + service.LogDir
+            LogDirectory = service.LogDir,
         });
 
-        return await AnsiConsole.Status().StartAsync("Streaming", async _ =>
+        return await AnsiConsole.Status().StartAsync("Streaming logs", async _ =>
         {
             await foreach (var log in logs)
             {

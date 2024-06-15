@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
 
-namespace Webion.IIS.Cli.Branches.Service.Stop;
+namespace Webion.IIS.Cli.Branches.Services.Logging.Stream;
 
-public sealed class StopServiceCommandSettings : CommandSettings
+public sealed class StreamLogsCommandSettings : CommandSettings
 {
     [Description("Name of the service to deploy")]
     [CommandArgument(0, "<ServiceName>")]

@@ -4,7 +4,7 @@ using Spectre.Console.Cli;
 using Webion.IIS.Cli.Settings;
 using Webion.IIS.Cli.Ui;
 
-namespace Webion.IIS.Cli.Branches.Build;
+namespace Webion.IIS.Cli.Branches.Services.Build;
 
 public sealed class BuildCommand : AsyncCommand<BuildCommandSettings>
 {

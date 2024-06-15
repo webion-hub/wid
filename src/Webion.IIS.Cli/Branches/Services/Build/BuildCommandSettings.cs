@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using Spectre.Console.Cli;
 
-namespace Webion.IIS.Cli.Branches.Logging.Stream;
+namespace Webion.IIS.Cli.Branches.Services.Build;
 
-public sealed class StreamLogsCommandSettings : CommandSettings
+public sealed class BuildCommandSettings : CommandSettings
 {
     [Description("Name of the service to deploy")]
     [CommandArgument(0, "<ServiceName>")]
