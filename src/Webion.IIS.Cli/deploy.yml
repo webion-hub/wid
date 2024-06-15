@@ -1,11 +1,18 @@
+version: 1.0
 services:
-  kaire: 
-    is_production: yes
+  test: 
+    is_production: true
+    force_delete: yes
+    
     daemon_address: http://192.168.1.194:8080
     site_id: 1
-    app_path: /webion/TestIIS
+    app_path: /TestIIS
     
-    delete_directory: true
-    build_command: dotnet publish -o out
-    bundle_dir: out/Webion.IIS.Daemon
+    bundle_dir: test
     log_dir: logs
+    
+    build:
+      work_dir: ../Webion.IIS.Daemon
+      command: |
+        dotnet publish -c Release
+        echo 'Done'

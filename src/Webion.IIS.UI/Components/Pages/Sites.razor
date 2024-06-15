@@ -1,0 +1,52 @@
+﻿@page "/"
+@using Webion.IIS.Daemon.Contracts.v1.Sites
+@inject IIISDaemonClient IISDaemonClient
+
+
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<PageTitle>Sites</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Sites</MudText>
+
+@if (sites == null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+}
+else
+{
+    <MudTable Items="sites" Hover="true" SortLabel="Sort By" Elevation="0">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<SiteDto, object>(x=>x.Id)">#
+            </MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<SiteDto, object>(x=>x.Name)">Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<SiteDto, object>(x=>x.State)">State</MudTableSortLabel>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="#">@context.Id</MudTd>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="State">@context.State</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager PageSizeOptions="new int[]{10, 50, 100}" />
+    </PagerContent>
+</MudTable>
+}
+
+@code {
+    private IEnumerable<SiteDto>? sites;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await IISDaemonClient.Sites.GetAllAsync(new CancellationToken());
+        sites = response.Sites;
+    }
+}

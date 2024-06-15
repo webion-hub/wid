@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using Asp.Versioning;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Web.Administration;
@@ -7,14 +8,17 @@ using Webion.IIS.Core.ValueObjects;
 namespace Webion.IIS.Daemon.Controllers.v1.Sites.Applications;
 
 [ApiController]
-[Route("v1/sites/{siteId:long}/applications/{appId}/deploy")]
+[Route("v{version:apiVersion}/sites/{siteId:long}/applications/{appId}/deploy")]
+[ApiVersion("1.0")]
+[Tags("Applications")]
 public sealed class DeployApplicationController : ControllerBase
 {
     /// <summary>
     /// Deploys an application bundle to a specified site and application path.
     /// </summary>
-    /// <param name="siteId">The ID of the site to deploy the application to.</param>
+    /// <param name="siteId">The ID of the site containing the application.</param>
     /// <param name="appId">The ID of the application to deploy.</param>
+    /// <param name="forceDelete">Deletes all the contents of the target application.</param>
     /// <param name="bundle">The application bundle to deploy.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>
@@ -24,8 +28,10 @@ public sealed class DeployApplicationController : ControllerBase
     /// </returns>
     [HttpPost]
     [RequestSizeLimit(50_000_000)]
-    public async Task<Results<Ok, NotFound<ProblemDetails>>> Deploy([FromRoute] long siteId,
+    public async Task<Results<Ok, NotFound<ProblemDetails>>> Deploy(
+        [FromRoute] long siteId,
         [FromRoute] string appId,
+        [FromQuery] bool forceDelete,
         [FromForm] IFormFile bundle,
         CancellationToken cancellationToken
     )
@@ -56,15 +62,19 @@ public sealed class DeployApplicationController : ControllerBase
         await using var stream = new MemoryStream();
         await bundle.CopyToAsync(stream, cancellationToken);
         stream.Position = 0;
-        
+
         var sitePath = Path.Combine(app.VirtualDirectories["/"].PhysicalPath);
+
+        if (forceDelete && Directory.Exists(sitePath))
+            Directory.Delete(sitePath, true);
+
         ZipFile.ExtractToDirectory(
             source: stream,
             destinationDirectoryName: sitePath,
             entryNameEncoding: null,
             overwriteFiles: true
         );
-        
+
         return TypedResults.Ok();
     }
 }

@@ -5,12 +5,12 @@ namespace Webion.IIS.Client.Apis;
 
 public interface IAppPoolsApi
 {
-    [Get("/v1/app-pools")]
+    [Get("/v{version:apiVersion}/app-pools")]
     Task<GetAllAppPoolsResponse> GetAllAsync();
 
-    [Put("/v1/app-pools/{appPoolId}/start")]
+    [Put("/v{version:apiVersion}/app-pools/{appPoolId}/start")]
     Task<ApiResponse<StartAppPoolResponse>> StartAsync(string appPoolId);
     
-    [Put("/v1/app-pools/{appPoolId}/stop")]
+    [Put("/v{version:apiVersion}/app-pools/{appPoolId}/stop")]
     Task<ApiResponse<StartAppPoolResponse>> StopAsync(string appPoolId);
 }

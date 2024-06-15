@@ -5,12 +5,12 @@ namespace Webion.IIS.Client.Apis;
 
 public interface ISitesApi
 {
-    [Get("/v1/sites")]
+    [Get("/v{version:apiVersion}/sites")]
     Task<GetAllSitesResponse> GetAllAsync(CancellationToken cancellationToken);
 
-    [Put("/v1/sites/{siteId}/start")]
+    [Put("/v{version:apiVersion}/sites/{siteId}/start")]
     Task<ApiResponse<StartSiteResponse>> StartAsync(long siteId, CancellationToken cancellationToken);
     
-    [Put("/v1/sites/{siteId}/stop")]
+    [Put("/v{version:apiVersion}/sites/{siteId}/stop")]
     Task<ApiResponse<StopSiteResponse>> StopAsync(long siteId, CancellationToken cancellationToken);
 }

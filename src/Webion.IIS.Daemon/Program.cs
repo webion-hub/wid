@@ -1,7 +1,14 @@
 using System.Text.Json.Serialization;
+using Webion.AspNetCore;
+using Webion.IIS.Daemon.Config;
+using Webion.IIS.Daemon.Config.OpenApi;
 using Webion.IIS.Daemon.Hubs.v1.Applications;
 
 var builder = WebApplication.CreateBuilder();
+
+builder.Add<CorsConfig>();
+builder.Add<VersioningConfig>();
+builder.Add<OpenApiConfig>();
 
 builder.Services
     .AddControllers()
@@ -14,16 +21,15 @@ builder.Services.AddSignalR();
 
 builder.Services.AddProblemDetails();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseSwagger();
-app.UseSwaggerUI();
+app.Use<CorsConfig>();
+
+app.Use<OpenApiConfig>();
 
 app.MapControllers();
-app.MapHub<StreamLogsHub>("/v1/hubs/applications");
+app.MapHub<StreamLogsHub>("/v{version:apiVersion}/hubs/applications");
 
 var port = args.FirstOrDefault() ?? "8080";
 var url = $"http://0.0.0.0:{port}";

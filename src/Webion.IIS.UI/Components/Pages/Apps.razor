@@ -1,0 +1,125 @@
+﻿@page "/apps"
+@using Refit
+@using Webion.IIS.Core.ValueObjects
+@using Webion.IIS.Daemon.Contracts.v1.AppPools
+@using Webion.IIS.Daemon.Contracts.v1.Sites.Applications
+@inject IIISDaemonClient IISDaemonClient
+
+<MudPopoverProvider/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<PageTitle>Apps</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">Apps</MudText>
+
+@if (apps == null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+}
+else
+{
+    <MudTable Items="apps" Hover="true" SortLabel="Sort By" Elevation="0">
+        <HeaderContent>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ApplicationDto, object>(x => x.Path)">
+                    Path
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x => x.Name)">
+                    App pool
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x => x.State)">
+                    State
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh>
+                <MudTableSortLabel SortBy="new Func<ApplicationPoolDto, object>(x => x.AutoStart)">
+                    AutoStart
+                </MudTableSortLabel>
+            </MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Path">@context.Path</MudTd>
+            <MudTd DataLabel="AppPoolName">@context.AppPool.Name</MudTd>
+            <MudTd DataLabel="State">@context.AppPool.State</MudTd>
+            <MudTd DataLabel="AutoStart">@context.AppPool.AutoStart</MudTd>
+            <MudTd>
+                <MudFab 
+                    HtmlTag="label" 
+                    Color="@Color.Success" 
+                    StartIcon="@Icons.Custom.Uncategorized.Radioactive"
+                    Size="@Size.Small" 
+                    OnClick="() => StartOnClick(context.AppPool.Id)"
+                />
+                
+                <MudFab 
+                    HtmlTag="label" 
+                    Color="@Color.Error" 
+                    StartIcon="@Icons.Material.Filled.Stop" 
+                    Size="@Size.Small"
+                    OnClick="() => StopOnClick(context.AppPool.Id)"
+                />
+                
+                <InputFile 
+                    id="@($"file-{context.Id}")" 
+                    hidden
+                    OnChange="e => UploadFile(e, context)" 
+                />
+                
+                <MudFab 
+                    for="@($"file-{context.Id}")"
+                    HtmlTag="label" 
+                    Color="@Color.Warning" 
+                    StartIcon="@Icons.Material.Filled.Upload" 
+                    Size="@Size.Small"
+                />
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[] { 10, 50 }"/>
+        </PagerContent>
+    </MudTable>
+}
+
+@code {
+    private IEnumerable<ApplicationDto>? apps;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await IISDaemonClient.Applications.GetAllAsync();
+
+        if (response.IsSuccessStatusCode)
+            apps = response.Content.Applications;
+    }
+
+    private async Task StartOnClick(string appId)
+    {
+        await IISDaemonClient.AppPools.StartAsync(appId);
+        await OnInitializedAsync();
+    }
+
+    private async Task StopOnClick(string appId)
+    {
+        await IISDaemonClient.AppPools.StopAsync(appId);
+        await OnInitializedAsync();
+    }
+
+    private async Task UploadFile(InputFileChangeEventArgs e, ApplicationDto application)
+    {
+        await IISDaemonClient.Applications.DeployAsync(
+            application.Site.Id,
+            Base64Id.Serialize(application.Path),
+            true,
+            new StreamPart(e.File.OpenReadStream(), "bundle.zip"),
+            new CancellationToken()
+        );
+
+        await OnInitializedAsync();
+    }
+
+}

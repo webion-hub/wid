@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Web.Administration;
@@ -8,7 +9,9 @@ using Webion.IIS.Daemon.Extensions;
 namespace Webion.IIS.Daemon.Controllers.v1.Sites.Applications;
 
 [ApiController]
-[Route("v1/sites/{siteId:long}/applications/{appId}/stop")]
+[Route("v{version:apiVersion}/sites/{siteId:long}/applications/{appId}/stop")]
+[ApiVersion("1.0")]
+[Tags("Applications")]
 public sealed class StopApplicationController : ControllerBase
 {
     [HttpPut]

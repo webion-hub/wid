@@ -1,3 +1,4 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Web.Administration;
@@ -8,7 +9,9 @@ using Webion.IIS.Daemon.Extensions;
 namespace Webion.IIS.Daemon.Controllers.v1.AppPools;
 
 [ApiController]
-[Route("v1/app-pools/{appPoolId}/start")]
+[Route("v{version:apiVersion}/app-pools/{appPoolId}/stop")]
+[ApiVersion("1.0")]
+[Tags("App Pools")]
 public sealed class StopAppPoolController : ControllerBase
 {
     [HttpPut]

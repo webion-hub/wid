@@ -1,4 +1,6 @@
-namespace Webion.IIS.Daemon.Controllers.v1.Sites.Applications.GetAll;
+using Webion.IIS.Daemon.Contracts.v1.AppPools;
+
+namespace Webion.IIS.Daemon.Contracts.v1.Sites.Applications;
 
 public sealed class GetAllSiteApplicationsResponse
 {
@@ -9,6 +11,7 @@ public sealed class ApplicationDto
 {
     public required string Id { get; init; }
     public required string Path { get; set; }
-    public required string AppPoolName { get; init; }
+    public required SiteDto Site { get; set; }
+    public required ApplicationPoolDto AppPool { get; init; }
     public required string EnabledProtocols { get; set; }
 }

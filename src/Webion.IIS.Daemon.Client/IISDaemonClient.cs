@@ -3,7 +3,7 @@ using Webion.IIS.Client.Apis;
 
 namespace Webion.IIS.Client;
 
-internal sealed class IISDaemonClient : IIISDaemonClient
+public sealed class IISDaemonClient : IIISDaemonClient
 {
     private readonly HttpClient _client;
 

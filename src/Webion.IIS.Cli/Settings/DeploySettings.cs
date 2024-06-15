@@ -5,6 +5,7 @@ namespace Webion.IIS.Cli.Settings;
 
 public sealed class DeploySettings
 {
+    public required string Version { get; init; }
     public required Dictionary<string, ServiceSettings> Services { get; init; }
 
     public static async Task<DeploySettings> TryReadFromFileAsync(string path)

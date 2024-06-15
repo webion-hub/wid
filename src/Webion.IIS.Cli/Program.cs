@@ -2,10 +2,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Spectre.Console.Cli;
 using Webion.IIS.Cli.Branches;
-using Webion.IIS.Cli.Branches.Build;
-using Webion.IIS.Cli.Branches.Deploy;
-using Webion.IIS.Cli.Branches.Logging;
-using Webion.IIS.Cli.Branches.Service;
+using Webion.IIS.Cli.Branches.Services;
+using Webion.IIS.Cli.Branches.Services.Deploy;
+using Webion.IIS.Cli.Branches.Services.Logging;
 using Webion.IIS.Cli.Core;
 using Webion.IIS.Cli.DI;
 using Webion.IIS.Client;
@@ -24,10 +23,7 @@ var app = new CommandApp(registrar);
 
 app.Configure(o =>
 {
-    o.AddBranch<BuildBranch>();
-    o.AddBranch<DeployBranch>();
-    o.AddBranch<LoggingBranch>();
-    o.AddBranch<ServiceBranch>();
+    o.AddBranch<ServicesBranch>();
 });
 
 return await app.RunAsync(args);
