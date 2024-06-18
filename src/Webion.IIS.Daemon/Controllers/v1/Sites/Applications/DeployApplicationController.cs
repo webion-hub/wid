@@ -2,8 +2,7 @@ using System.IO.Compression;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Web.Administration;
-using Webion.IIS.Core.ValueObjects;
+using Webion.IIS.Daemon.Managers;
 
 namespace Webion.IIS.Daemon.Controllers.v1.Sites.Applications;
 
@@ -28,7 +27,7 @@ public sealed class DeployApplicationController : ControllerBase
     /// </returns>
     [HttpPost]
     [RequestSizeLimit(50_000_000)]
-    public async Task<Results<Ok, NotFound<ProblemDetails>>> Deploy(
+    public async Task<IActionResult> Deploy(
         [FromRoute] long siteId,
         [FromRoute] string appId,
         [FromQuery] bool forceDelete,
@@ -36,37 +35,27 @@ public sealed class DeployApplicationController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        using var iis = new ServerManager();
+        using var manager = new IISManager();
+        var findAppResult = manager.FindApp(siteId, appId);
 
-        var site = iis.Sites.FirstOrDefault(x => x.Id == siteId);
-        if (site is null)
-        {
-            return TypedResults.NotFound(new ProblemDetails
-            {
-                Detail = "Could not find the given site",
-                Status = StatusCodes.Status404NotFound,
-            });
-        }
+        if (findAppResult is FindAppResult.SiteNotFound)
+            ModelState.AddModelError(nameof(siteId), "Site not found");
 
-        var path = Base64Id.Deserialize(appId);
-        var app = site.Applications.FirstOrDefault(x => x.Path == path);
-        if (app is null)
-        {
-            return TypedResults.NotFound(new ProblemDetails
-            {
-                Detail = "Could not find the application for the given site",
-                Status = StatusCodes.Status404NotFound,
-            });
-        }
+        if (findAppResult is FindAppResult.AppNotFound)
+            ModelState.AddModelError(nameof(siteId), "App not found");
+
+        if (!ModelState.IsValid)
+            return ValidationProblem();
+
+        var (_, app) = (FindAppResult.Found)findAppResult;
 
         await using var stream = new MemoryStream();
         await bundle.CopyToAsync(stream, cancellationToken);
         stream.Position = 0;
 
-        var sitePath = Path.Combine(app.VirtualDirectories["/"].PhysicalPath);
-
+        var sitePath = app.VirtualDirectories["/"].PhysicalPath;
         if (forceDelete && Directory.Exists(sitePath))
-            Directory.Delete(sitePath, true);
+            Directory.Delete(sitePath, recursive: true);
 
         ZipFile.ExtractToDirectory(
             source: stream,
@@ -75,6 +64,6 @@ public sealed class DeployApplicationController : ControllerBase
             overwriteFiles: true
         );
 
-        return TypedResults.Ok();
+        return Ok();
     }
 }

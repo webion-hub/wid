@@ -5,27 +5,26 @@ using Webion.IIS.Cli.Settings;
 using Webion.IIS.Cli.Ui;
 using Webion.IIS.Cli.Ui.Errors;
 using Webion.IIS.Client;
-using Webion.IIS.Core.ValueObjects;
 
-namespace Webion.IIS.Cli.Branches.Services.Stop;
+namespace Webion.IIS.Cli.Branches.Services.Recycle;
 
-public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings>
+public sealed class RecycleServiceCommand : AsyncCommand<RecycleServiceCommandSettings>
 {
     private readonly IIISDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
 
-    public StopServiceCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime)
+    public RecycleServiceCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime)
     {
         _iis = iis;
         _lifetime = lifetime;
     }
 
-    public override async Task<int> ExecuteAsync(CommandContext context, StopServiceCommandSettings settings)
+    public override async Task<int> ExecuteAsync(CommandContext context, RecycleServiceCommandSettings settings)
     {
         var service = await DeploySettings.GetServiceFromFileAsync(
             path: settings.SettingsFile ?? "deploy.yml",
             serviceName: settings.ServiceName,
-            cancellationToken: default
+            cancellationToken: _lifetime.CancellationToken
         );
         
         if (service is null)
@@ -33,7 +32,7 @@ public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings
             AnsiConsole.MarkupLine(Msg.Err("Service not configured"));
             return 1;
         }
-
+        
         var env = service.GetEnvironment(settings.Env);
         if (env.IsProduction)
         {
@@ -49,17 +48,24 @@ public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings
 
         return await AnsiConsole.Status().StartAsync("Stopping service", async ctx =>
         {
-            var appId = Base64Id.Serialize(env.AppPath);
-
-            ctx.Status("Stopping service");
-            var stopResponse = await _iis.Applications.StopAsync(env.SiteId, appId, _lifetime.CancellationToken);
+            var stopResponse = await _iis.Applications.StopAsync(env.SiteId, env.AppId, _lifetime.CancellationToken);
             if (!stopResponse.IsSuccessStatusCode)
             {
                 AnsiConsole.Write(ApiErrorControl.From(stopResponse));
-                return -1;
+                return 1;
             }
+            
+            AnsiConsole.MarkupLine(Msg.Ok("Service stopped"));
 
-            AnsiConsole.MarkupLine($"{Icons.Ok} Service stopped");
+            ctx.Status("Starting service");
+            var startResponse = await _iis.Applications.StartAsync(env.SiteId, env.AppId, _lifetime.CancellationToken);
+            if (!startResponse.IsSuccessStatusCode)
+            {
+                AnsiConsole.Write(ApiErrorControl.From(startResponse));
+                return 2;
+            }
+            
+            AnsiConsole.MarkupLine(Msg.Ok("Service started"));
             return 0;
         });
     }

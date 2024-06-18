@@ -40,17 +40,24 @@ public sealed class BuildCommand : AsyncCommand<BuildCommandSettings>
                     .Where(x => x.Length != 0)
                     .Select(x => new CliCommand(
                         Name: x[0],
-                        Args: x[1..]
-                    ));
-                
+                        Args: x[1..],
+                        EnsureNonZero: step.EnsureNonZero
+                    ))
+                    .ToList();
+
+                var i = 1;
                 foreach (var cmd in commands)
                 {
-                    ctx.Status(cmd.ToString());
+                    ctx.Status($"[b]{step.Name} ({i++}/{commands.Count})[/] {cmd}");
                     await CliWrap.Cli.Wrap(cmd.Name)
                         .WithArguments(cmd.Args)
                         .WithWorkingDirectory(step.WorkDir)
                         .WithStandardOutputPipe(PipeTarget.ToDelegate(AnsiConsole.WriteLine))
                         .WithStandardErrorPipe(PipeTarget.ToDelegate(AnsiConsole.WriteLine))
+                        .WithValidation(cmd.EnsureNonZero
+                            ? CommandResultValidation.ZeroExitCode
+                            : CommandResultValidation.None
+                        )
                         .ExecuteAsync(_lifetime.CancellationToken);
                     
                     AnsiConsole.MarkupLine(Msg.Ok(cmd.ToString()));
@@ -64,7 +71,7 @@ public sealed class BuildCommand : AsyncCommand<BuildCommandSettings>
     }
 }
 
-file record CliCommand(string Name, string[] Args)
+file record CliCommand(string Name, string[] Args, bool EnsureNonZero)
 {
     public override string ToString()
     {

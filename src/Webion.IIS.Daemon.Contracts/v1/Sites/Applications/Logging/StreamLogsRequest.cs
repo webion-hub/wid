@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Webion.IIS.Daemon.Contracts.v1.Sites.Applications;
+namespace Webion.IIS.Daemon.Contracts.v1.Sites.Applications.Logging;
 
 public sealed class StreamLogsRequest
 {

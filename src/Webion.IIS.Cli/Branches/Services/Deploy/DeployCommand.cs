@@ -85,23 +85,23 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
 
     private async Task<int> StopAsync(EnvironmentSettings env)
     {
-        var stopResponse = await _iis.Applications.StopAsync(env.SiteId, env.AppId);
+        var stopResponse = await _iis.Applications.StopAsync(env.SiteId, env.AppId, _lifetime.CancellationToken);
         if (!stopResponse.IsSuccessStatusCode)
         {
-            AnsiConsole.Write(ApiErrorTable.From(stopResponse));
+            AnsiConsole.Write(ApiErrorControl.From(stopResponse));
             return -1;
         }
 
-        AnsiConsole.MarkupLine($"{Icons.Ok} Service stopped");
+        AnsiConsole.MarkupLine(Msg.Ok("Service stopped"));
         return 0;
     }
     
     private async Task<int> StartAsync(EnvironmentSettings env)
     {
-        var startResponse = await _iis.Applications.StartAsync(env.SiteId, env.AppId);
+        var startResponse = await _iis.Applications.StartAsync(env.SiteId, env.AppId, _lifetime.CancellationToken);
         if (!startResponse.IsSuccessStatusCode)
         {
-            AnsiConsole.Write(ApiErrorTable.From(startResponse));
+            AnsiConsole.Write(ApiErrorControl.From(startResponse));
             return -1;
         }
 
@@ -117,7 +117,12 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
     )
     {
         await using var stream = new MemoryStream();
-        ZipFile.CreateFromDirectory(service.BundleDir, stream);
+        var tmpDir = Directory.CreateTempSubdirectory("wid_deploy");
+        var files = Directory.GetFiles(service.BundleDir);
+        foreach (var file in files)
+            File.Copy(file, Path.Combine(tmpDir.FullName, file));
+        
+        ZipFile.CreateFromDirectory(tmpDir.FullName, stream);
         stream.Position = 0;
 
         var uploadTask = ctx.AddTask("Uploading bundle", maxValue: stream.Length);
@@ -148,7 +153,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         
         if (!deployResponse.IsSuccessStatusCode)
         {
-            AnsiConsole.Write(ApiErrorTable.From(deployResponse));
+            AnsiConsole.Write(ApiErrorControl.From(deployResponse));
             return -1;
         }
         

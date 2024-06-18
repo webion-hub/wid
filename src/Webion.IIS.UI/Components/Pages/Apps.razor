@@ -91,7 +91,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var response = await IISDaemonClient.Applications.GetAllAsync();
+        var response = await IISDaemonClient.Applications.GetAllAsync(default);
 
         if (response.IsSuccessStatusCode)
             apps = response.Content.Applications;

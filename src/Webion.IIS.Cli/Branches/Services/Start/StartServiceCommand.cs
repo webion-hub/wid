@@ -34,15 +34,25 @@ public sealed class StartServiceCommand : AsyncCommand<StartServiceCommandSettin
         }
 
         var env = service.GetEnvironment(settings.Env);
+        if (env.IsProduction)
+        {
+            var commit = AnsiConsole.Confirm(
+                prompt: Msg.Ask("Deploy to production"),
+                defaultValue: false
+            );
+
+            if (!commit)
+                return 0;
+        }
         _iis.BaseAddress = env.DaemonAddress;
 
         return await AnsiConsole.Status().StartAsync("Starting service", async ctx =>
         {
             ctx.Status("Starting service");
-            var startResponse = await _iis.Applications.StartAsync(env.SiteId, env.AppId);
+            var startResponse = await _iis.Applications.StartAsync(env.SiteId, env.AppId, _lifetime.CancellationToken);
             if (!startResponse.IsSuccessStatusCode)
             {
-                AnsiConsole.Write(ApiErrorTable.From(startResponse));
+                AnsiConsole.Write(ApiErrorControl.From(startResponse));
                 return -1;
             }
 
