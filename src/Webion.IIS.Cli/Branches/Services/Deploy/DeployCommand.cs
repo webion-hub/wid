@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using Refit;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -73,7 +74,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
                 new TransferSpeedColumn(),
             ])
             .StartAsync(async ctx => await UploadAsync(settings, service, ctx, env));
-
+        
         if (uploadResult != 0)
             return uploadResult;
 
@@ -105,7 +106,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
             return -1;
         }
 
-        AnsiConsole.MarkupLine($"{Icons.Ok} Service started");
+        AnsiConsole.MarkupLine(Msg.Ok("Service started"));
         return 0;
     }
     
@@ -116,12 +117,9 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         EnvironmentSettings env
     )
     {
+        var tmpDir = await PrepareDeployDirectoryAsync(service);
+
         await using var stream = new MemoryStream();
-        var tmpDir = Directory.CreateTempSubdirectory("wid_deploy");
-        var files = Directory.GetFiles(service.BundleDir);
-        foreach (var file in files)
-            File.Copy(file, Path.Combine(tmpDir.FullName, file));
-        
         ZipFile.CreateFromDirectory(tmpDir.FullName, stream);
         stream.Position = 0;
 
@@ -129,7 +127,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         var unzipTask = ctx
             .AddTask("Unzipping files", autoStart: false, maxValue: stream.Length)
             .IsIndeterminate();
-                
+        
         await using var progress = new ProgressStream(stream);
         using var _ = progress.OnRead.Subscribe(e =>
         {
@@ -158,5 +156,35 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         }
         
         return 0;
+    }
+
+    private async Task<DirectoryInfo> PrepareDeployDirectoryAsync(ServiceSettings service)
+    {
+        var ignoreFile = File.Exists(service.IgnoreFile)
+            ? await File.ReadAllTextAsync(service.IgnoreFile, _lifetime.CancellationToken)
+            : string.Empty;
+
+        var ignore = ignoreFile
+            .Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => new Regex(x))
+            .ToList();
+        
+        var tmpDir = Directory.CreateTempSubdirectory("wid_deploy_");
+        var files = Directory.EnumerateFiles(service.BundleDir, "*.*", SearchOption.AllDirectories);
+        foreach (var file in files)
+        {
+            var isIgnored = ignore.Any(x => x.IsMatch(file));
+            if (isIgnored)
+                continue;
+
+            var tmpFilePath = Path.Combine(tmpDir.FullName, file);
+            var tmpFileDir = Path.GetDirectoryName(tmpFilePath);
+            if (tmpFileDir is not null)
+                Directory.CreateDirectory(tmpFileDir);
+            
+            File.Copy(file, tmpFilePath);
+        }
+
+        return tmpDir;
     }
 }

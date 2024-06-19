@@ -25,6 +25,8 @@ var app = new CommandApp(registrar);
 
 app.Configure(o =>
 {
+    o.PropagateExceptions();
+    
     o.SetApplicationVersion("0.2-alpha");
     o.AddBranch<ServicesBranch>();
 });
