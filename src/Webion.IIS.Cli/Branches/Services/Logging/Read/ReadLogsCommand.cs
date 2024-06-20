@@ -1,4 +1,3 @@
-using System.Text;
 using Humanizer;
 using Humanizer.Bytes;
 using Spectre.Console;

@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Extensions.Http;
 using Spectre.Console.Cli;
+using SpectreConsoleLogger;
 using Webion.IIS.Cli.Branches;
 using Webion.IIS.Cli.Branches.Services;
 using Webion.IIS.Cli.Branches.Services.Deploy;
@@ -17,6 +19,15 @@ var config = new ConfigurationBuilder()
 
 var services = new ServiceCollection();
 
+services.AddLogging(options =>
+{
+    options.ClearProviders();
+    options.AddProvider(new SpectreConsoleLoggerProvider());
+    
+    var logLevel = config.GetValue("log-level", LogLevel.Error);
+    options.SetMinimumLevel(logLevel);
+});
+
 services.AddIISDaemonClient();
 services.AddSingleton<ICliApplicationLifetime, CliApplicationLifetime>();
 
@@ -25,7 +36,9 @@ var app = new CommandApp(registrar);
 
 app.Configure(o =>
 {
-    o.PropagateExceptions();
+    var fullErrors = config.GetValue("full-errors", false);
+    if (fullErrors)
+        o.PropagateExceptions();
     
     o.SetApplicationVersion("0.2-alpha");
     o.AddBranch<ServicesBranch>();

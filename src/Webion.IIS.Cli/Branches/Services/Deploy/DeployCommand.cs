@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Logging;
 using Refit;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -16,11 +17,13 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
 {
     private readonly IIISDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
+    private readonly ILogger<DeployCommand> _logger;
 
-    public DeployCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime)
+    public DeployCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime, ILogger<DeployCommand> logger)
     {
         _iis = iis;
         _lifetime = lifetime;
+        _logger = logger;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, DeployCommandSettings settings)
@@ -117,7 +120,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         EnvironmentSettings env
     )
     {
-        var tmpDir = await PrepareDeployDirectoryAsync(service);
+        var tmpDir = await PrepareDeployDirectoryAsync(service, settings);
 
         await using var stream = new MemoryStream();
         ZipFile.CreateFromDirectory(tmpDir.FullName, stream);
@@ -158,24 +161,24 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         return 0;
     }
 
-    private async Task<DirectoryInfo> PrepareDeployDirectoryAsync(ServiceSettings service)
+    private async Task<DirectoryInfo> PrepareDeployDirectoryAsync(ServiceSettings service, DeployCommandSettings settings)
     {
-        var ignoreFile = File.Exists(service.IgnoreFile)
-            ? await File.ReadAllTextAsync(service.IgnoreFile, _lifetime.CancellationToken)
-            : string.Empty;
-
-        var ignore = ignoreFile
-            .Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            .Select(x => new Regex(x))
-            .ToList();
+        var ignores = await GetIgnoresAsync(service, settings);
         
         var tmpDir = Directory.CreateTempSubdirectory("wid_deploy_");
         var files = Directory.EnumerateFiles(service.BundleDir, "*.*", SearchOption.AllDirectories);
+        
+        _logger.LogDebug("Created temporary directory {TmpDir}", tmpDir);
+        _logger.LogDebug("Ignoring files: {Ignores}", string.Join(", ", ignores));
+        
         foreach (var file in files)
         {
-            var isIgnored = ignore.Any(x => x.IsMatch(file));
+            var isIgnored = ignores.Any(x => x.IsMatch(file));
             if (isIgnored)
+            {
+                _logger.LogTrace("File {File} ignored", file);
                 continue;
+            }
 
             var tmpFilePath = Path.Combine(tmpDir.FullName, file);
             var tmpFileDir = Path.GetDirectoryName(tmpFilePath);
@@ -183,8 +186,33 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
                 Directory.CreateDirectory(tmpFileDir);
             
             File.Copy(file, tmpFilePath);
+            _logger.LogTrace("Copied file {File} to {TmpFilePath}", file, tmpFilePath);
         }
 
         return tmpDir;
+    }
+
+    private async Task<List<Regex>> GetIgnoresAsync(ServiceSettings service, DeployCommandSettings settings)
+    {
+        if (settings.NoIgnore)
+        {
+            AnsiConsole.MarkupLine(Msg.Line("Skipping ignore file"));
+            return [];
+        }
+        
+        _logger.LogDebug("Searching ignore file {IgnoreFile}", service.IgnoreFile);
+        if (!File.Exists(service.IgnoreFile))
+        {
+            _logger.LogDebug("Ignore file not found");
+            return [];
+        }
+
+        AnsiConsole.MarkupLine(Msg.Ok("Ignore file found"));
+        
+        var ignoreFile = await File.ReadAllTextAsync(service.IgnoreFile, _lifetime.CancellationToken);
+        return ignoreFile
+            .Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => new Regex(x))
+            .ToList();
     }
 }

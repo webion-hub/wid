@@ -4,7 +4,7 @@ public static class Msg
 {
     public static string Line(string message)
     {
-        return $"{Icons.Dash} {message}";
+        return $"> {message}";
     }
     
     public static string Ask(string question)

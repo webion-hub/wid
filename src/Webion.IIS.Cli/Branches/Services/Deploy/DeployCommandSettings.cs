@@ -20,4 +20,8 @@ public sealed class DeployCommandSettings : CommandSettings
     [Description("Forcefully deletes the contents of the remote app")]
     [CommandOption("--force-delete")]
     public bool ForceDelete { get; set; }
+    
+    [Description("Does not apply the ignore file")]
+    [CommandOption("--no-ignore")]
+    public bool NoIgnore { get; init; }
 }
