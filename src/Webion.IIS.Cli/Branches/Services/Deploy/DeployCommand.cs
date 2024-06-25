@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Refit;
 using Spectre.Console;
 using Spectre.Console.Cli;
+using Webion.IIS.Cli.Branches.Services.Build;
 using Webion.IIS.Cli.Core;
 using Webion.IIS.Cli.Helpers.Progress;
 using Webion.IIS.Cli.Settings;
@@ -58,6 +59,16 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
                 return 0;
         }
 
+        if (settings.Build)
+        {
+            var builder = new ServiceBuilder(_lifetime);
+            var buildResult = await builder.BuildAsync(service);
+            if (buildResult != 0)
+                return buildResult;
+
+            AnsiConsole.WriteLine();
+        }
+        
         _iis.BaseAddress = env.DaemonAddress;
 
         var stopResult = await AnsiConsole.Status().StartAsync("Stopping service", 

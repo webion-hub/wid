@@ -24,4 +24,8 @@ public sealed class DeployCommandSettings : CommandSettings
     [Description("Does not apply the ignore file")]
     [CommandOption("--no-ignore")]
     public bool NoIgnore { get; init; }
+    
+    [Description("Builds the app before deploying it")]
+    [CommandOption("--build")]
+    public bool Build { get; init; }
 }

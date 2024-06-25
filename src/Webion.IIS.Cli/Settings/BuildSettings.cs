@@ -5,5 +5,5 @@ public sealed class BuildSettings
     public string Name { get; init; } = null!;
     public string Run { get; init; } = null!;
     public string WorkDir { get; init; } = ".";
-    public bool EnsureNonZero { get; set; } = true;
+    public bool EnsureNonZero { get; set; } = false;
 }
