@@ -18,6 +18,7 @@ public sealed class DeployApplicationController : ControllerBase
     /// <param name="siteId">The ID of the site containing the application.</param>
     /// <param name="appId">The ID of the application to deploy.</param>
     /// <param name="forceDelete">Deletes all the contents of the target application.</param>
+    /// <param name="backup">Backs-up the current deployment.</param>
     /// <param name="bundle">The application bundle to deploy.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>
@@ -31,6 +32,7 @@ public sealed class DeployApplicationController : ControllerBase
         [FromRoute] long siteId,
         [FromRoute] string appId,
         [FromQuery] bool forceDelete,
+        [FromQuery] bool backup,
         [FromForm] IFormFile bundle,
         CancellationToken cancellationToken
     )
@@ -54,6 +56,17 @@ public sealed class DeployApplicationController : ControllerBase
         stream.Position = 0;
 
         var sitePath = app.VirtualDirectories["/"].PhysicalPath;
+
+        if (backup && Directory.Exists(sitePath))
+        {
+            var backupFolder = Path.Combine("~/.wid/backups", app.Path);
+            if (!Directory.Exists(backupFolder))
+                Directory.CreateDirectory(backupFolder);
+
+            var backupPath = Path.Combine(backupFolder, $"{DateTime.Now:yyyyMMddHHmmss}.zip");
+            ZipFile.CreateFromDirectory(sitePath, backupPath);
+        }
+        
         if (forceDelete && Directory.Exists(sitePath))
             Directory.Delete(sitePath, recursive: true);
 

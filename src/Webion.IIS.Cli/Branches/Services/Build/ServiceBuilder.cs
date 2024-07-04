@@ -1,4 +1,5 @@
 using CliWrap;
+using CliWrap.Builders;
 using Humanizer;
 using Spectre.Console;
 using Webion.IIS.Cli.Core;
@@ -55,7 +56,7 @@ internal sealed class ServiceBuilder
                         : Icons.Err;
                     
                     AnsiConsole.MarkupLine(
-                        $"{icon} [blue]{result.ExitTime:hh:mm:ss}[/] [b]{cmd}[/] [gray]took {runTimeFmt}[/]"
+                        $"{icon} [blue]{result.ExitTime:HH:mm:ss}[/] [b]{cmd}[/] [gray]took {runTimeFmt}[/]"
                     );
                 }
             }

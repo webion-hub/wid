@@ -1,17 +1,17 @@
 version: 1.0
 services:
-  test: 
-    is_production: true
-    force_delete: yes
-    
-    daemon_address: http://192.168.1.194:8080
-    site_id: 1
-    app_path: /TestIIS
-    
+  test:
+    envs:
+      - name: default
+        daemon_address: http://192.168.1.194:8080
+        is_production: no
+        site_id: 1
+        app_path: /kaire/trace/ui
+        log_dir: ./logs
+  
     bundle_dir: test
-    log_dir: logs
-    
     build:
-      work_dir: ../Webion.IIS.Daemon
-      command: |
-        dotnet publish -c Release
+      - name: 'Publish' 
+        work_dir: ../Webion.IIS.Daemon
+        run: |
+          dotnet publish -c Release 
