@@ -35,8 +35,8 @@ app.Configure(o =>
     var fullErrors = config.GetValue("full-errors", false);
     if (fullErrors)
         o.PropagateExceptions();
-    
-    o.SetApplicationVersion("0.2-alpha");
+
+    o.UseAssemblyInformationalVersion();
     o.AddBranch<ServicesBranch>();
 });
 

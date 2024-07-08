@@ -177,7 +177,9 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         var ignores = await GetIgnoresAsync(service, settings);
         
         var tmpDir = Directory.CreateTempSubdirectory("wid_deploy_");
-        var files = Directory.EnumerateFiles(service.BundleDir, "*.*", SearchOption.AllDirectories);
+        var files = Directory
+            .EnumerateFiles(service.BundleDir, "*.*", SearchOption.AllDirectories)
+            .Select(x => x.Replace(service.BundleDir, ""));
         
         _logger.LogDebug("Created temporary directory {TmpDir}", tmpDir);
         _logger.LogDebug("Ignoring files: {Ignores}", string.Join(", ", ignores));
