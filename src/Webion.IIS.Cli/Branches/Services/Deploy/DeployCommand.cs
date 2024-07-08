@@ -134,7 +134,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         var tmpDir = await PrepareDeployDirectoryAsync(service, settings);
 
         await using var stream = new MemoryStream();
-        ZipFile.CreateFromDirectory(tmpDir.FullName, stream);
+        ZipFile.CreateFromDirectory(tmpDir, stream);
         stream.Position = 0;
 
         var uploadTask = ctx.AddTask("Uploading bundle", maxValue: stream.Length);
@@ -172,14 +172,12 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         return 0;
     }
 
-    private async Task<DirectoryInfo> PrepareDeployDirectoryAsync(ServiceSettings service, DeployCommandSettings settings)
+    private async Task<string> PrepareDeployDirectoryAsync(ServiceSettings service, DeployCommandSettings settings)
     {
         var ignores = await GetIgnoresAsync(service, settings);
         
         var tmpDir = Directory.CreateTempSubdirectory("wid_deploy_");
-        var files = Directory
-            .EnumerateFiles(service.BundleDir, "*.*", SearchOption.AllDirectories)
-            .Select(x => x.Replace(service.BundleDir, ""));
+        var files = Directory.EnumerateFiles(service.BundleDir, "*.*", SearchOption.AllDirectories);
         
         _logger.LogDebug("Created temporary directory {TmpDir}", tmpDir);
         _logger.LogDebug("Ignoring files: {Ignores}", string.Join(", ", ignores));
@@ -202,7 +200,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
             _logger.LogTrace("Copied file {File} to {TmpFilePath}", file, tmpFilePath);
         }
 
-        return tmpDir;
+        return Path.Combine(tmpDir.FullName, service.BundleDir);
     }
 
     private async Task<List<Regex>> GetIgnoresAsync(ServiceSettings service, DeployCommandSettings settings)
