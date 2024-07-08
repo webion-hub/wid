@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Web.Administration;
 using Webion.IIS.Core.ValueObjects;
-using Webion.IIS.Daemon.Contracts.v1.Sites.Applications;
 using Webion.IIS.Daemon.Contracts.v1.Sites.Applications.Logging;
 
 namespace Webion.IIS.Daemon.Hubs.v1.Applications;

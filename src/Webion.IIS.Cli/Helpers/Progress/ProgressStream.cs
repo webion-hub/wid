@@ -1,4 +1,3 @@
-using System.Reactive;
 using System.Reactive.Subjects;
 
 namespace Webion.IIS.Cli.Helpers.Progress;

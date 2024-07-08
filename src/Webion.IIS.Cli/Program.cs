@@ -1,14 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Polly;
-using Polly.Extensions.Http;
 using Spectre.Console.Cli;
 using SpectreConsoleLogger;
 using Webion.IIS.Cli.Branches;
 using Webion.IIS.Cli.Branches.Services;
-using Webion.IIS.Cli.Branches.Services.Deploy;
-using Webion.IIS.Cli.Branches.Services.Logging;
 using Webion.IIS.Cli.Core;
 using Webion.IIS.Cli.DI;
 using Webion.IIS.Client;

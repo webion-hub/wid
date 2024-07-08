@@ -1,6 +1,4 @@
 using CliWrap;
-using CliWrap.Builders;
-using Humanizer;
 using Spectre.Console;
 using Webion.IIS.Cli.Core;
 using Webion.IIS.Cli.Settings;
