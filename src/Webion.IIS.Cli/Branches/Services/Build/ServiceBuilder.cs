@@ -36,8 +36,8 @@ internal sealed class ServiceBuilder
                 foreach (var cmd in commands)
                 {
                     ctx.Status($"[b]{step.Name} ({i++}/{commands.Count})[/] {cmd}");
-                    var result = await CliWrap.Cli.Wrap(cmd.Name)
-                        .WithArguments(cmd.Args)
+                    var result = await CliWrap.Cli.Wrap("bash")
+                        .WithArguments(["-c", cmd.ToString()])
                         .WithWorkingDirectory(step.WorkDir)
                         .WithStandardOutputPipe(PipeTarget.ToDelegate(AnsiConsole.WriteLine))
                         .WithStandardErrorPipe(PipeTarget.ToDelegate(AnsiConsole.WriteLine))

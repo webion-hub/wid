@@ -41,12 +41,6 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
             return 1;
         }
 
-        if (!Directory.Exists(service.BundleDir))
-        {
-            AnsiConsole.MarkupLine(Msg.Err($"Could not find directory {service.BundleDir}"));
-            return -1;
-        }
-
         var env = service.GetEnvironment(settings.Env);
         if (env.IsProduction)
         {
@@ -67,6 +61,18 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
                 return buildResult;
 
             AnsiConsole.WriteLine();
+        }
+        
+        if (!Directory.Exists(service.BundleDir))
+        {
+            AnsiConsole.MarkupLine(Msg.Err($"Bundle directory {service.BundleDir} does not exist"));
+            return -1;
+        }
+        
+        if (!Directory.EnumerateFileSystemEntries(service.BundleDir).Any())
+        {
+            AnsiConsole.MarkupLine(Msg.Err($"Bundle directory {service.BundleDir} is empty"));
+            return -1;
         }
         
         _iis.BaseAddress = env.DaemonAddress;
@@ -184,6 +190,8 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
         
         foreach (var file in files)
         {
+            _logger.LogTrace("Handling file {File}", file);
+            
             var isIgnored = ignores.Any(x => x.IsMatch(file));
             if (isIgnored)
             {
