@@ -19,12 +19,14 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
     private readonly IIISDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
     private readonly ILogger<DeployCommand> _logger;
+    private readonly ServiceBuilder _serviceBuilder;
 
-    public DeployCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime, ILogger<DeployCommand> logger)
+    public DeployCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime, ILogger<DeployCommand> logger, ServiceBuilder serviceBuilder)
     {
         _iis = iis;
         _lifetime = lifetime;
         _logger = logger;
+        _serviceBuilder = serviceBuilder;
     }
 
     public override async Task<int> ExecuteAsync(CommandContext context, DeployCommandSettings settings)
@@ -55,8 +57,7 @@ public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
 
         if (settings.Build)
         {
-            var builder = new ServiceBuilder(_lifetime);
-            var buildResult = await builder.BuildAsync(service);
+            var buildResult = await _serviceBuilder.BuildAsync(service, env);
             if (buildResult != 0)
                 return buildResult;
 

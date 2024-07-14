@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Spectre.Console.Cli;
 using SpectreConsoleLogger;
+using Webion.Extensions.DependencyInjection;
 using Webion.IIS.Cli.Branches;
 using Webion.IIS.Cli.Branches.Services;
 using Webion.IIS.Cli.Core;
@@ -26,6 +27,8 @@ services.AddLogging(options =>
 
 services.AddIISDaemonClient();
 services.AddSingleton<ICliApplicationLifetime, CliApplicationLifetime>();
+
+services.AddModulesFromAssemblyContaining<Program>();
 
 var registrar = new TypeRegistrar(services);
 var app = new CommandApp(registrar);
