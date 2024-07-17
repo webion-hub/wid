@@ -18,8 +18,8 @@ public sealed class DeploySettings
         var settings = await TryReadFromFileAsync(path, cancellationToken);
         return settings.Services.GetValueOrDefault(serviceName);
     }
-    
-    public static async Task<DeploySettings> TryReadFromFileAsync(string path, CancellationToken cancellationToken)
+
+    private static async Task<DeploySettings> TryReadFromFileAsync(string path, CancellationToken cancellationToken)
     {
         var deserializer = new DeserializerBuilder()
             .WithNamingConvention(UnderscoredNamingConvention.Instance)

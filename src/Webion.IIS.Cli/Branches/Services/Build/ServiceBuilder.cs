@@ -35,6 +35,12 @@ public sealed class ServiceBuilder
             
             foreach (var step in service.Build)
             {
+                if (step.OnEnvs.Any() && !step.OnEnvs.Contains(env.Name))
+                {
+                    AnsiConsole.MarkupLine(Msg.Line($"Skipping step {step.Name}, env does not apply"));
+                    continue;
+                }
+                
                 var commands = step.Run
                     .Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                     .Select(x => x.Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
