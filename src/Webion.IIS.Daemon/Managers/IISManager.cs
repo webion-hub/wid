@@ -3,7 +3,7 @@ using Webion.IIS.Core.ValueObjects;
 
 namespace Webion.IIS.Daemon.Managers;
 
-public sealed class IISManager : IDisposable
+public sealed class IisManager : IDisposable
 {
     private readonly ServerManager _iis = new();
     

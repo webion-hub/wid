@@ -2,7 +2,7 @@ using Webion.IIS.Client.Apis;
 
 namespace Webion.IIS.Client;
 
-public interface IIISDaemonClient
+public interface IIisDaemonClient
 {
     public IApplicationsApi Applications { get; }
     public ISitesApi Sites { get; }

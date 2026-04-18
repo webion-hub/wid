@@ -15,7 +15,7 @@ public sealed class GetAllLogsController : ControllerBase
         [FromQuery] string logsPath
     )
     {
-        using var manager = new IISManager();
+        using var manager = new IisManager();
         var findAppResult = manager.FindApp(siteId, appId);
 
         if (findAppResult is FindAppResult.SiteNotFound)

@@ -11,10 +11,10 @@ namespace Webion.IIS.Cli.Branches.Services.Stop;
 
 public sealed class StopServiceCommand : AsyncCommand<StopServiceCommandSettings>
 {
-    private readonly IIISDaemonClient _iis;
+    private readonly IIisDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
 
-    public StopServiceCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime)
+    public StopServiceCommand(IIisDaemonClient iis, ICliApplicationLifetime lifetime)
     {
         _iis = iis;
         _lifetime = lifetime;

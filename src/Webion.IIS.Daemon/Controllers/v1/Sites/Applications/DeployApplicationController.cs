@@ -37,7 +37,7 @@ public sealed class DeployApplicationController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        using var manager = new IISManager();
+        using var manager = new IisManager();
         var findAppResult = manager.FindApp(siteId, appId);
 
         if (findAppResult is FindAppResult.SiteNotFound)

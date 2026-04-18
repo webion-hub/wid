@@ -25,7 +25,7 @@ services.AddLogging(options =>
     options.SetMinimumLevel(logLevel);
 });
 
-services.AddIISDaemonClient();
+services.AddIisDaemonClient();
 services.AddSingleton<ICliApplicationLifetime, CliApplicationLifetime>();
 
 services.AddModulesFromAssemblyContaining<Program>();

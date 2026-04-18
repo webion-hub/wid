@@ -10,10 +10,10 @@ namespace Webion.IIS.Cli.Branches.Services.Start;
 
 public sealed class StartServiceCommand : AsyncCommand<StartServiceCommandSettings>
 {
-    private readonly IIISDaemonClient _iis;
+    private readonly IIisDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
 
-    public StartServiceCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime)
+    public StartServiceCommand(IIisDaemonClient iis, ICliApplicationLifetime lifetime)
     {
         _iis = iis;
         _lifetime = lifetime;

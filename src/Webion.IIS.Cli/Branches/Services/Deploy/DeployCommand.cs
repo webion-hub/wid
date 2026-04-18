@@ -16,12 +16,12 @@ namespace Webion.IIS.Cli.Branches.Services.Deploy;
 
 public sealed class DeployCommand : AsyncCommand<DeployCommandSettings>
 {
-    private readonly IIISDaemonClient _iis;
+    private readonly IIisDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
     private readonly ILogger<DeployCommand> _logger;
     private readonly ServiceBuilder _serviceBuilder;
 
-    public DeployCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime, ILogger<DeployCommand> logger, ServiceBuilder serviceBuilder)
+    public DeployCommand(IIisDaemonClient iis, ICliApplicationLifetime lifetime, ILogger<DeployCommand> logger, ServiceBuilder serviceBuilder)
     {
         _iis = iis;
         _lifetime = lifetime;

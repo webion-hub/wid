@@ -10,10 +10,10 @@ namespace Webion.IIS.Cli.Branches.Services.Recycle;
 
 public sealed class RecycleServiceCommand : AsyncCommand<RecycleServiceCommandSettings>
 {
-    private readonly IIISDaemonClient _iis;
+    private readonly IIisDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
 
-    public RecycleServiceCommand(IIISDaemonClient iis, ICliApplicationLifetime lifetime)
+    public RecycleServiceCommand(IIisDaemonClient iis, ICliApplicationLifetime lifetime)
     {
         _iis = iis;
         _lifetime = lifetime;

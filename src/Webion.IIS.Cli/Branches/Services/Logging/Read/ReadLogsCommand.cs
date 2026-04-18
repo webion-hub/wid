@@ -14,10 +14,10 @@ namespace Webion.IIS.Cli.Branches.Services.Logging.Read;
 
 public sealed class ReadLogsCommand : AsyncCommand<ReadLogsCommandSettings>
 {
-    private readonly IIISDaemonClient _iis;
+    private readonly IIisDaemonClient _iis;
     private readonly ICliApplicationLifetime _lifetime;
 
-    public ReadLogsCommand(ICliApplicationLifetime lifetime, IIISDaemonClient iis)
+    public ReadLogsCommand(ICliApplicationLifetime lifetime, IIisDaemonClient iis)
     {
         _lifetime = lifetime;
         _iis = iis;
